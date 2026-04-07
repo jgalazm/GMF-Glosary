@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glosario GMF</title>
+  <style>
+    /* Documento tipo LaTeX: tamaño A4, hojas visibles, división por página */
+    * { box-sizing: border-box; }
+    html { background: #D1EBF0; }
+    body {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 12pt;
+      color: #000;
+      background: #D1EBF0;
+      line-height: 1.4;
+      margin: 0;
+      padding: 24px 0;
+    }
+    /* Contenedor = hoja A4 (210mm × 297mm por página); líneas cada 297mm */
+    #documento {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto;
+      background: #fff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+      padding: 2.5cm;
+      background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0,
+        transparent calc(297mm - 2px),
+        #999 calc(297mm - 2px),
+        #999 297mm
+      );
+    }
+    a { color: #1a5fb4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Portada = una página A4 de alto, estable aunque cambien los elementos */
+    .portada {
+      min-height: 297mm;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0;
+    }
+    .portada-titulo {
+      font-size: 18pt;
+      font-weight: bold;
+      margin: 0 0 1em;
+    }
+    .portada-subtitulo {
+      font-size: 12pt;
+      margin: 0 0 2em;
+    }
+    .portada-autor,
+    .portada-institucion,
+    .portada-fecha {
+      margin: 0.5em 0;
+      font-size: 11pt;
+    }
+    .portada-fecha { margin-top: 2em; }
+    .portada-autor { color: #ffffff; }
+
+    section { margin: 2em 0; }
+    h2 { font-size: 14pt; font-weight: bold; margin: 2em 0 1em; }
+    h3 { font-size: 12pt; font-weight: bold; margin: 1.5em 0 0.75em; }
+
+    /* Buscador: cuadro con input y botón */
+    .buscador-caja {
+      margin: 1.5em 0;
+      padding: 1.25em;
+      border: 1pt solid #333;
+      background: #f8f8f8;
+      max-width: 28em;
+    }
+    .buscador-leyenda { margin-bottom: 0.5em; font-weight: bold; }
+    .buscador-fila {
+      display: flex;
+      gap: 0.5em;
+      align-items: center;
+    }
+    .buscador-input {
+      flex: 1;
+      font-family: "Times New Roman", Times, serif;
+      font-size: 12pt;
+      padding: 0.4em 0.5em;
+      border: 1pt solid #999;
+    }
+    .buscador-input:focus { outline: none; border-color: #333; }
+    .buscador-btn {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 12pt;
+      padding: 0.4em 1em;
+      cursor: pointer;
+      border: 1pt solid #333;
+      background: #fff;
+    }
+    .buscador-btn:hover { background: #eee; }
+    .buscador-resultado { font-size: 11pt; margin-top: 0.5em; }
+    .buscador-listado { margin-top: 1em; }
+    .buscador-listado .indice-lista { margin-top: 0.5em; }
+    .buscador-listado .indice-fila a { color: #1a5fb4; }
+
+    .entrada { margin: 1.25em 0; }
+    .entrada-titulo { font-weight: bold; margin: 0 0 0.25em; }
+    .entrada-pregunta { font-style: italic; margin: 0.25em 0; }
+    .entrada-explicacion { margin: 0.5em 0; text-align: justify; }
+    .entrada-meta { font-size: 11pt; margin: 0.2em 0; }
+
+    .area { margin: 2em 0; }
+    .area-titulo { font-size: 12pt; font-weight: bold; margin-bottom: 0.75em; }
+
+    /* Índices estilo libro: término, guía de puntos, número de página */
+    .indice-lista { list-style: none; padding: 0; margin: 0; }
+    .indice-lista li { margin: 0.2em 0; }
+    .indice-fila {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5em;
+    }
+    .indice-fila a {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5em;
+      flex: 1;
+      min-width: 0;
+      color: inherit;
+    }
+    .indice-fila a:hover { color: #1a5fb4; }
+    .indice-term { flex-shrink: 0; }
+    .indice-guia {
+      flex: 1;
+      min-width: 1em;
+      border-bottom: 1pt dotted #000;
+      margin: 0 0.15em;
+    }
+    .indice-pagina { flex-shrink: 0; text-align: right; }
+    .indice-sub { margin-left: 1.5em; font-size: 11pt; }
+
+    /* Damyan Santander */
+    .salto-pagina {
+      display: block;
+      width: 100%;
+      min-height: 0;
+      margin: 0;
+      padding: 0;
+      border: none;
+      visibility: hidden;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="documento">
+  <header class="portada">
+    <h1 class="portada-titulo">Glosario</h1>
+    <p class="portada-subtitulo">GMF</p>
+    <p class="portada-autor">Damyan Santander</p>
+    <p class="portada-institucion">2026</p>
+    <p class="portada-fecha" id="fecha-portada"></p>
+  </header>
+
+  <div class="salto-pagina" aria-hidden="true"></div>
+
+  <section id="introduccion">
+    <h2>Introducción</h2>
+    <p style="text-align: justify;">
+      Glosario de palabras clave de la investigacion de los integrantes del grupo, ordenada por area, concepto, pregunta asociada y personas relacionadas. Se incluye un buscador para
+      encontrar conceptos en el documento. Se ordena el contenido segun 3 tablas de contenido: por preguntas, por contenido y por personas.
+    </p>
+  </section>
+
+  <div class="salto-pagina" aria-hidden="true"></div>
+
+  <!-- Buscador -->
+  <section id="buscador">
+    <h2>Buscador del documento</h2>
+    <div class="buscador-caja">
+      <p class="buscador-leyenda">Término o expresión:</p>
+      <div class="buscador-fila">
+        <input type="search" id="input-buscar" class="buscador-input" placeholder="Escriba aquí..." autocomplete="off">
+        <button type="button" id="btn-buscar" class="buscador-btn">Buscar</button>
+      </div>
+      <p class="buscador-resultado" id="buscador-resultado"></p>
+      <div id="buscador-listado" class="buscador-listado" style="display: none;"></div>
+    </div>
+  </section>
+
+  <div class="salto-pagina" aria-hidden="true"></div>
+
+  <!-- Índices y contenido se generan desde DICCIONARIO en el script -->
+  <section id="sec-indice-preguntas">
+    <h2>Índice de preguntas</h2>
+    <ul class="indice-lista" id="lista-preguntas"></ul>
+  </section>
+
+  <section id="sec-indice-titulos">
+    <h2>Índice de títulos por área</h2>
+    <div id="lista-titulos-por-area"></div>
+  </section>
+
+  <section id="sec-indice-personas">
+    <h2>Índice de personas</h2>
+    <ul class="indice-lista" id="lista-personas"></ul>
+  </section>
+
+  <div class="salto-pagina" aria-hidden="true"></div>
+
+  <section id="contenido">
+    <h2>Contenido por área</h2>
+    <div id="contenido-por-area"></div>
+  </section>
+
+  </div><!-- #documento -->
+
+  <script>
+    (function () {
+      /*
+       * ========== DICCIONARIO: ÚNICA FUENTE DE DATOS ==========
+       * Cada entrada tiene:
+       *   id          — identificador único (ej: 'entrada-1')
+       *   pregunta    — la pregunta del concepto
+       *   titulo      — nombre del concepto
+       *   explicacion — texto explicativo
+       *   personas    — nombres separados por comas
+       *   area        — área temática (agrupa el contenido y los índices)
+       *   referencia  — texto de la referencia
+       *   referenciaUrl — si tiene URL, la referencia será un enlace; si '', solo texto
+       * Para agregar una entrada: copie un bloque { id: '...', ... } y cambie los valores.
+       */
+      var DICCIONARIO = [
+        {
+          id: 'entrada-1',
+          pregunta: '¿Quién le robó el sombrero al profesor?',
+          titulo: 'Sombrero',
+          explicacion: 'Explicación del concepto sombrero en el contexto de la investigación.',
+          personas: 'Nombre Ejemplo',
+          area: 'Área 1',
+          referencia: 'Código o fuente.',
+          referenciaUrl: ''
+        },
+        {
+          id: 'entrada-2',
+          pregunta: '¿Qué es A?',
+          titulo: 'A',
+          explicacion: 'Explicación del concepto A.',
+          personas: 'Persona A',
+          area: 'Área 1',
+          referencia: 'Ref. A',
+          referenciaUrl: ''
+        },
+        {
+          id: 'entrada-3',
+          pregunta: '¿Qué es B?',
+          titulo: 'B',
+          explicacion: 'Explicación del concepto B.',
+          personas: 'Persona B',
+          area: 'Área 2',
+          referencia: 'Ref. B',
+          referenciaUrl: ''
+        },
+        {
+          id: 'entrada-4',
+          pregunta: '¿Qué es c?',
+          titulo: 'C',
+          explicacion: 'Explicación del concepto C.',
+          personas: 'Persona C',
+          area: 'Área 2',
+          referencia: 'Ref. C',
+          referenciaUrl: ''
+        },
+        {
+          id: 'entrada-5',
+          pregunta: '¿Qué es D?',
+          titulo: 'D',
+          explicacion: 'Explicación del concepto D.',
+          personas: 'Persona D',
+          area: 'Área 3',
+          referencia: 'Ref. D',
+          referenciaUrl: ''
+        }
+      ];
+
+      // ---------- Generar contenido e índices desde DICCIONARIO ----------
+      function renderContenido() {
+        var contenedor = document.getElementById('contenido-por-area');
+        if (!contenedor) return;
+        var ordenAreas = [];
+        DICCIONARIO.forEach(function (e) {
+          if (ordenAreas.indexOf(e.area) === -1) ordenAreas.push(e.area);
+        });
+        contenedor.innerHTML = '';
+        ordenAreas.forEach(function (area) {
+          var divArea = document.createElement('div');
+          divArea.className = 'area';
+          var h3 = document.createElement('h3');
+          h3.className = 'area-titulo';
+          h3.textContent = area;
+          divArea.appendChild(h3);
+          DICCIONARIO.filter(function (e) { return e.area === area; }).forEach(function (e) {
+            var art = document.createElement('article');
+            art.className = 'entrada';
+            art.id = e.id;
+            var refHtml = e.referenciaUrl
+              ? '<a href="' + escapeHtml(e.referenciaUrl) + '" target="_blank" rel="noopener">' + escapeHtml(e.referencia) + '</a>'
+              : escapeHtml(e.referencia);
+            art.innerHTML =
+              '<p class="entrada-titulo">' + escapeHtml(e.titulo) + '</p>' +
+              '<p class="entrada-pregunta">' + escapeHtml(e.pregunta) + '</p>' +
+              '<p class="entrada-explicacion">' + escapeHtml(e.explicacion) + '</p>' +
+              '<p class="entrada-meta">Personas relacionadas: ' + escapeHtml(e.personas) + '.</p>' +
+              '<p class="entrada-meta">Área: ' + escapeHtml(e.area) + '.</p>' +
+              '<p class="entrada-meta">Referencia: ' + refHtml + '.</p>';
+            divArea.appendChild(art);
+          });
+          contenedor.appendChild(divArea);
+        });
+      }
+
+      function escapeHtml(s) {
+        var div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+      }
+
+      function crearFilaIndice(entradaId, texto) {
+        var li = document.createElement('li');
+        li.className = 'indice-fila';
+        li.setAttribute('data-entrada-id', entradaId);
+        li.innerHTML = '<a href="#' + entradaId + '"><span class="indice-term">' + escapeHtml(texto) + '</span><span class="indice-guia"></span><span class="indice-pagina"></span></a>';
+        return li;
+      }
+
+      function renderIndicePreguntas() {
+        var ul = document.getElementById('lista-preguntas');
+        if (!ul) return;
+        ul.innerHTML = '';
+        DICCIONARIO.forEach(function (e) {
+          ul.appendChild(crearFilaIndice(e.id, e.pregunta));
+        });
+      }
+
+      function renderIndiceTitulos() {
+        var cont = document.getElementById('lista-titulos-por-area');
+        if (!cont) return;
+        var ordenAreas = [];
+        DICCIONARIO.forEach(function (e) {
+          if (ordenAreas.indexOf(e.area) === -1) ordenAreas.push(e.area);
+        });
+        cont.innerHTML = '';
+        ordenAreas.forEach(function (area) {
+          var h3 = document.createElement('h3');
+          h3.textContent = area;
+          cont.appendChild(h3);
+          var ul = document.createElement('ul');
+          ul.className = 'indice-lista';
+          DICCIONARIO.filter(function (e) { return e.area === area; }).forEach(function (e) {
+            ul.appendChild(crearFilaIndice(e.id, e.titulo));
+          });
+          cont.appendChild(ul);
+        });
+      }
+
+      function renderIndicePersonas() {
+        var ul = document.getElementById('lista-personas');
+        if (!ul) return;
+        ul.innerHTML = '';
+        var items = [];
+        DICCIONARIO.forEach(function (e) {
+          var personas = e.personas.split(',').map(function (p) { return p.trim(); }).filter(Boolean);
+          personas.forEach(function (nombre) {
+            items.push({ nombre: nombre, entradaId: e.id, area: e.area });
+          });
+        });
+        items.forEach(function (item) {
+          ul.appendChild(crearFilaIndice(item.entradaId, item.nombre + ' — ' + item.area));
+        });
+      }
+
+      renderContenido();
+      renderIndicePreguntas();
+      renderIndiceTitulos();
+      renderIndicePersonas();
+
+      // Fecha en portada (opcional, aquí se deja vacío a propósito)
+      var fechaNodo = document.getElementById('fecha-portada');
+      if (fechaNodo) {
+        fechaNodo.textContent = '';
+      }
+
+      // Altura de página = A4 (297 mm) en píxeles; medido respecto a #documento
+      var doc = document.getElementById('documento');
+      var mmPorPx = 25.4 / 96;
+      var ALTURA_PAGINA_PX = Math.round(297 / mmPorPx);
+
+      function obtenerPagina(el) {
+        if (!el || !doc) return 1;
+        var docTop = doc.getBoundingClientRect().top + window.pageYOffset;
+        var elTop = el.getBoundingClientRect().top + window.pageYOffset;
+        var rel = elTop - docTop;
+        if (rel <= 0) return 1;
+        return Math.max(1, Math.floor(rel / ALTURA_PAGINA_PX) + 1);
+      }
+
+      function actualizarIndices() {
+        document.querySelectorAll('.indice-fila[data-entrada-id]').forEach(function (fila) {
+          var id = fila.getAttribute('data-entrada-id');
+          var entrada = document.getElementById(id);
+          var pag = entrada ? obtenerPagina(entrada) : 0;
+          fila.querySelector('.indice-pagina').textContent = pag;
+        });
+      }
+
+      function actualizarSaltosPagina() {
+        var docTop = doc.getBoundingClientRect().top + window.pageYOffset;
+        document.querySelectorAll('#documento .salto-pagina').forEach(function (el) {
+          var elTop = el.getBoundingClientRect().top + window.pageYOffset;
+          var pos = elTop - docTop;
+          var resto = pos % ALTURA_PAGINA_PX;
+          var gap = resto === 0 ? ALTURA_PAGINA_PX : (ALTURA_PAGINA_PX - resto);
+          el.style.minHeight = gap + 'px';
+        });
+      }
+
+      function evitarCorteEntradas() {
+        var docTop = doc.getBoundingClientRect().top + window.pageYOffset;
+        var list = document.querySelectorAll('#contenido .entrada');
+        var insertados = 0;
+        list.forEach(function (el) {
+          var r = el.getBoundingClientRect();
+          var top = r.top + window.pageYOffset - docTop;
+          var bottom = r.bottom + window.pageYOffset - docTop;
+          var paginaInicio = Math.floor(top / ALTURA_PAGINA_PX);
+          var paginaFin = Math.floor((bottom - 1) / ALTURA_PAGINA_PX);
+          if (paginaInicio !== paginaFin) {
+            var prev = el.previousElementSibling;
+            if (!prev || !prev.classList.contains('salto-pagina')) {
+              var salto = document.createElement('div');
+              salto.className = 'salto-pagina salto-pagina-auto';
+              salto.setAttribute('aria-hidden', 'true');
+              el.parentNode.insertBefore(salto, el);
+              insertados++;
+            }
+          }
+        });
+        return insertados;
+      }
+
+      function redibujar() {
+        document.querySelectorAll('#documento .salto-pagina-auto').forEach(function (el) { el.remove(); });
+        var maxVueltas = 15;
+        for (var v = 0; v < maxVueltas; v++) {
+          actualizarSaltosPagina();
+          if (evitarCorteEntradas() === 0) break;
+        }
+        actualizarSaltosPagina();
+        actualizarIndices();
+      }
+      redibujar();
+      window.addEventListener('resize', redibujar);
+
+      // Buscador: lista de coincidencias (título + área), clic lleva a la entrada
+      var inputBuscar = document.getElementById('input-buscar');
+      var resultadoBuscar = document.getElementById('buscador-resultado');
+      var listadoBusqueda = document.getElementById('buscador-listado');
+      var entradas = document.querySelectorAll('#contenido .entrada');
+
+      function normalizar(s) {
+        return (s || '').toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+      }
+
+      function obtenerArea(entradaEl) {
+        var metas = entradaEl.querySelectorAll('.entrada-meta');
+        for (var i = 0; i < metas.length; i++) {
+          var t = metas[i].textContent;
+          if (t.indexOf('Área:') === 0) {
+            return t.replace(/^Área:\s*/, '').replace(/\.\s*$/, '').trim();
+          }
+        }
+        return '';
+      }
+
+      function ejecutarBusqueda() {
+        var q = normalizar(inputBuscar.value.trim());
+        listadoBusqueda.style.display = 'none';
+        listadoBusqueda.innerHTML = '';
+
+        if (q.length === 0) {
+          resultadoBuscar.textContent = '';
+          return;
+        }
+
+        var coincidencias = [];
+        entradas.forEach(function (el) {
+          var texto = normalizar(el.textContent);
+          if (texto.indexOf(q) === -1) return;
+          var tituloEl = el.querySelector('.entrada-titulo');
+          var titulo = tituloEl ? tituloEl.textContent.trim() : '';
+          var area = obtenerArea(el);
+          var id = el.id || '';
+          if (id) coincidencias.push({ id: id, titulo: titulo, area: area });
+        });
+
+        resultadoBuscar.textContent = coincidencias.length + ' entrada(s).';
+        if (coincidencias.length === 0) return;
+
+        var ul = document.createElement('ul');
+        ul.className = 'indice-lista';
+        coincidencias.forEach(function (item) {
+          var entradaEl = document.getElementById(item.id);
+          var pag = entradaEl ? obtenerPagina(entradaEl) : '';
+          var li = document.createElement('li');
+          li.className = 'indice-fila';
+          var a = document.createElement('a');
+          a.href = '#' + item.id;
+          var spanTerm = document.createElement('span');
+          spanTerm.className = 'indice-term';
+          spanTerm.textContent = item.titulo + (item.area ? ' — ' + item.area : '');
+          var spanGuia = document.createElement('span');
+          spanGuia.className = 'indice-guia';
+          var spanPag = document.createElement('span');
+          spanPag.className = 'indice-pagina';
+          spanPag.textContent = pag;
+          a.appendChild(spanTerm);
+          a.appendChild(spanGuia);
+          a.appendChild(spanPag);
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+        listadoBusqueda.appendChild(ul);
+        listadoBusqueda.style.display = 'block';
+      }
+      document.getElementById('btn-buscar').addEventListener('click', ejecutarBusqueda);
+      inputBuscar.addEventListener('keydown', function (e) { if (e.key === 'Enter') ejecutarBusqueda(); });
+    })();
+  </script>
+
+</body>
+</html>
